@@ -47,7 +47,7 @@
         self.searchButton.hidden = YES;
         self.loadingIndicator.hidden = NO;
         [self.loadingIndicator startAnimating];
-        NSString *stringRequest = [self.textField.text stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+        NSString *stringRequest = [self.textField.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         self.titles = [NSMutableArray new];
         self.images = [NSMutableArray new];
         self.prices = [NSMutableArray new];
@@ -67,14 +67,13 @@
 //Connection Data Delegate Methods
 
 -(void)searchRequest:(NSString *)request offset:(NSInteger)offset{
+    NSString *urlString = [[NSString alloc]initWithFormat:@"https://api.mercadolibre.com/sites/MLA/search?q=%@&offset=%li", request, (long)offset];
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSURLConnection *connection = [[NSURLConnection alloc]initWithRequest:urlRequest delegate:self];
+    
+    self.recievedData = [[NSMutableData alloc]init];
 
-NSString *urlString = [[NSString alloc]initWithFormat:@"https://api.mercadolibre.com/sites/MLA/search?q=%@&offset=%li", request, (long)offset];
-NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
-NSURLConnection *connection = [[NSURLConnection alloc]initWithRequest:urlRequest delegate:self];
-
-self.recievedData = [[NSMutableData alloc]init];
-
-[connection start];
+    [connection start];
 
 }
 
@@ -173,7 +172,8 @@ self.recievedData = [[NSMutableData alloc]init];
 {
     // the last row after added new items
     NSInteger endingRow = [self.titles count];
-    [self searchRequest:self.textField.text offset:endingRow];
+    NSString *stringRequest = [self.textField.text stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    [self searchRequest:stringRequest offset:endingRow];
     
 }
 
